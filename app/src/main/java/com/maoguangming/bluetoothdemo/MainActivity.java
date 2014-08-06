@@ -6,7 +6,10 @@ import android.app.Dialog;
 import android.app.Fragment;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -14,7 +17,13 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+import android.widget.Adapter;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.Button;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -63,10 +72,14 @@ public class MainActivity extends Activity {
         private Button searchButton;
         private BluetoothAdapter mBluetoothAdapter;
         private ArrayList<BluetoothDevice> mDevicesAvailable;
-        private Dialog deviceList;
+        private ArrayList<String> mDevicesNameList;
+        private Dialog deviceListDialog;
+        private ListView mDeviceList;
+        private ArrayAdapter mDeviceListAdapter;
 
         public PlaceholderFragment() {
             mDevicesAvailable = new ArrayList<BluetoothDevice>();
+            mDevicesNameList = new ArrayList<String>();
         }
 
         @Override
@@ -86,6 +99,18 @@ public class MainActivity extends Activity {
             }
         }
 
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+
+            if (mReceiver != null) {
+                getActivity().unregisterReceiver(mReceiver);
+            }
+
+            if (mBluetoothAdapter != null) {
+                mBluetoothAdapter.cancelDiscovery();
+            }
+        }
 
         @Override
         public void onClick(View view) {
@@ -114,6 +139,8 @@ public class MainActivity extends Activity {
             if (!mBluetoothAdapter.isEnabled()) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+            } else {
+                findDevices();
             }
         }
 
@@ -129,16 +156,75 @@ public class MainActivity extends Activity {
 
                 if (resultCode == RESULT_OK) {
                     Toast.makeText(getActivity(), R.string.bluetooth_enabled, Toast.LENGTH_SHORT).show();
+                    findDevices();
                 }
             }
         }
 
-        private void findDevices() {
+        // Create a BroadcastReceiver for ACTION_FOUND
+        private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                // When discovery finds a device
+                if (BluetoothDevice.ACTION_FOUND.equals(action)) {
+                    // Get the BluetoothDevice object from the Intent
+                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    // Add the name and address to an array adapter to show in a ListView
+                    mDevicesAvailable.add(device);
+                    mDevicesNameList.add(device.getName());
 
+                    if (mDeviceListAdapter != null) {
+                        mDeviceListAdapter.notifyDataSetChanged();
+                    }
+                }
+            }
+        };
+
+        AdapterView.OnItemClickListener connectDevice = new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if (position >= 0 && position < mDevicesAvailable.size()) {
+                    BluetoothDevice device = mDevicesAvailable.get(position);
+                    Toast.makeText(getActivity(), getString(R.string.connecting_to) + " " +
+                        device.getName(), Toast.LENGTH_LONG).show();
+
+                    mBluetoothAdapter.cancelDiscovery();
+                }
+            }
+        };
+
+        private void findDevices() {
+            deviceListDialog = new Dialog(getActivity());
+            if (deviceListDialog == null) {
+                return;
+            }
+            deviceListDialog.setContentView(R.layout.device_list);
+            deviceListDialog.setTitle(R.string.search_bluetooth_devices);
+
+            mDeviceList = (ListView) deviceListDialog.findViewById(android.R.id.list);
+            if (mDeviceList != null) {
+                mDeviceListAdapter = new ArrayAdapter<String>(getActivity(),
+                        android.R.layout.simple_list_item_1, mDevicesNameList);
+                mDeviceList.setAdapter(mDeviceListAdapter);
+                mDeviceList.setOnItemClickListener(connectDevice);
+            }
+            deviceListDialog.show();
+
+            queryPaired();
+
+            // Register the BroadcastReceiver
+            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+            getActivity().registerReceiver(mReceiver, filter); // Don't forget to unregister during onDestroy
+
+            if (mBluetoothAdapter != null) {
+                mBluetoothAdapter.startDiscovery();
+            }
         }
 
+
+
         private void queryPaired() {
-            if (mBluetoothAdapter == null) {
+            if (mBluetoothAdapter == null || mDevicesAvailable == null) {
                 return;
             }
 
@@ -148,6 +234,11 @@ public class MainActivity extends Activity {
                 // Loop through paired devices
                 for (BluetoothDevice device : pairedDevices) {
                     mDevicesAvailable.add(device);
+                    mDevicesNameList.add(device.getName());
+                }
+
+                if (mDeviceListAdapter != null) {
+                    mDeviceListAdapter.notifyDataSetChanged();
                 }
             }
         }

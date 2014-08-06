@@ -8,6 +8,8 @@
     <string name="bluetooth_not_enabled">Bluetooth not enabled</string>
     <string name="bluetooth_enabled">Bluetooth enabled</string>
     <string name="available_devices">Available devices</string>
+    <string name="search_bluetooth_devices">Search devices</string>
     <string name="searching">Searching...</string>
+    <string name="connecting_to">Connecting to</string>
 
 </resources>

@@ -9,14 +9,16 @@
         android:layout_height="60dp">
 
         <TextView
-            android:textSize="20sp"
+            android:textSize="15sp"
             android:gravity="center"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:text="@string/available_devices"
             android:padding="5dp"
             android:layout_alignParentLeft="true"/>
+
         <LinearLayout
+            android:id="@+id/search_hint"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_alignParentRight="true">
@@ -25,14 +27,19 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:text="@string/searching"
-                android:textSize="20sp"
+                android:textSize="15sp"
                 android:gravity="center"/>
+
+            <ProgressBar
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"/>
         </LinearLayout>
     </RelativeLayout>
 
     <ListView
+        android:id="@android:id/list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#555555">
+        android:layout_height="match_parent">
     </ListView>
 </LinearLayout>
