@@ -189,10 +189,19 @@ public class MainActivity extends Activity {
                         device.getName(), Toast.LENGTH_LONG).show();
 
                     mBluetoothAdapter.cancelDiscovery();
+
+                    Intent intent = new Intent(getActivity(), ConnectActivity.class);
+                    if (intent != null) {
+                        intent.putExtra("device", device);
+                        startActivity(intent);
+                    }
                 }
             }
         };
 
+        /**
+         * found Bluetooth devices
+         */
         private void findDevices() {
             deviceListDialog = new Dialog(getActivity());
             if (deviceListDialog == null) {
@@ -221,8 +230,9 @@ public class MainActivity extends Activity {
             }
         }
 
-
-
+        /**
+         * query devices already paired.
+         */
         private void queryPaired() {
             if (mBluetoothAdapter == null || mDevicesAvailable == null) {
                 return;

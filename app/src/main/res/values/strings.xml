@@ -13,5 +13,12 @@
     <string name="connecting_to">Connecting to</string>
     <string name="title_activity_connect">ConnectActivity</string>
     <string name="hello_world">Hello world!</string>
-
+    
+    <string name="temperature">温度</string>
+    <string name="pressure">压力</string>
+    <string name="wind">风</string>
+    <string name="wind_front">正风</string>
+    <string name="wind_side">测风</string>
+    <string name="acceleration">加速度</string>
+    
 </resources>
