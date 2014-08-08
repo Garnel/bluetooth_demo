@@ -11,5 +11,7 @@
     <string name="search_bluetooth_devices">Search devices</string>
     <string name="searching">Searching...</string>
     <string name="connecting_to">Connecting to</string>
+    <string name="title_activity_connect">ConnectActivity</string>
+    <string name="hello_world">Hello world!</string>
 
 </resources>
